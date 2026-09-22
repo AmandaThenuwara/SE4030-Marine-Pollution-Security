@@ -1,0 +1,1004 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Marine Pollution Management Hub API",
+    "version": "1.0.0",
+    "description": "API documentation for the Marine Pollution Management Hub system.",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Task": {
+        "type": "object",
+        "required": [
+          "location",
+          "description"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "location": {
+            "type": "object",
+            "required": [
+              "address",
+              "coordinates"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              },
+              "coordinates": {
+                "type": "object",
+                "properties": {
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Pending",
+              "Assigned",
+              "In Progress",
+              "Completed"
+            ]
+          },
+          "assignedTo": {
+            "type": "string"
+          },
+          "workforceRequired": {
+            "type": "number"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "wasteType": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Volunteer": {
+        "type": "object",
+        "required": [
+          "name",
+          "contact"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contact": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "team"
+            ]
+          },
+          "teamSize": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "availabilityDates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "profilePicture": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "travelDistance": {
+            "type": "number"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "password"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "volunteer",
+              "Cleanup_Task_Manager"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Achievement": {
+        "type": "object",
+        "required": [
+          "volunteerId",
+          "activityTitle",
+          "description",
+          "pointsAwarded"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "volunteerId": {
+            "type": "string"
+          },
+          "activityTitle": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "pointsAwarded": {
+            "type": "number"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "Beginner",
+              "Intermediate",
+              "Advanced"
+            ]
+          },
+          "badgeType": {
+            "type": "string",
+            "enum": [
+              "Gold",
+              "Silver",
+              "Bronze"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "submittedBy": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "user"
+            ]
+          },
+          "evidenceUrl": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/achievements/leaderboard": {
+      "get": {
+        "summary": "Get achievement leaderboard",
+        "tags": [
+          "Achievements"
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard data"
+          }
+        }
+      }
+    },
+    "/api/achievements/my-achievements": {
+      "get": {
+        "summary": "Get current user's achievements",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user achievements"
+          }
+        }
+      }
+    },
+    "/api/achievements/submit": {
+      "post": {
+        "summary": "Submit a new achievement for approval",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "activityTitle": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "evidenceImage": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Achievement submitted"
+          }
+        }
+      }
+    },
+    "/api/achievements/stats": {
+      "get": {
+        "summary": "Get overall achievement stats (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Achievement statistics"
+          }
+        }
+      }
+    },
+    "/api/achievements": {
+      "get": {
+        "summary": "Get all achievements (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of all achievements"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new achievement (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Achievement"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Achievement created"
+          }
+        }
+      }
+    },
+    "/api/achievements/volunteer/{volunteerId}": {
+      "get": {
+        "summary": "Get achievements by volunteer ID (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "volunteerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of achievements for the volunteer"
+          }
+        }
+      }
+    },
+    "/api/achievements/{id}/approve": {
+      "put": {
+        "summary": "Approve an achievement (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Achievement approved"
+          }
+        }
+      }
+    },
+    "/api/achievements/{id}/reject": {
+      "put": {
+        "summary": "Reject an achievement (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Achievement rejected"
+          }
+        }
+      }
+    },
+    "/api/achievements/{id}": {
+      "get": {
+        "summary": "Get achievement by ID (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Achievement data"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an achievement (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Achievement"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Achievement updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an achievement (Admin only)",
+        "tags": [
+          "Achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Achievement deleted"
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "volunteer",
+                      "Cleanup_Task_Manager"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login a user",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/api/auth/profile": {
+      "get": {
+        "summary": "Get current user profile",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/auth/volunteers": {
+      "get": {
+        "summary": "Get all volunteers (Admin only)",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of volunteers"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/extras/quote": {
+      "get": {
+        "summary": "Get a motivational quote",
+        "tags": [
+          "Extras"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/extras/fact": {
+      "get": {
+        "summary": "Get a random ocean fact",
+        "tags": [
+          "Extras"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "summary": "Get all tasks",
+        "tags": [
+          "Tasks"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new task",
+        "tags": [
+          "Tasks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Task"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created"
+          }
+        }
+      }
+    },
+    "/api/tasks/{id}": {
+      "patch": {
+        "summary": "Update a task",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Task"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a task",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task deleted"
+          }
+        }
+      }
+    },
+    "/api/tasks/{id}/assign": {
+      "patch": {
+        "summary": "Assign a task to a volunteer",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "assignedTo": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task assigned"
+          }
+        }
+      }
+    },
+    "/api/tasks/{id}/complete": {
+      "patch": {
+        "summary": "Mark a task as completed",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task completed"
+          }
+        }
+      }
+    },
+    "/api/volunteers": {
+      "get": {
+        "summary": "Get all volunteers",
+        "tags": [
+          "Volunteers"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of volunteers"
+          }
+        }
+      },
+      "post": {
+        "summary": "Register a new volunteer",
+        "tags": [
+          "Volunteers"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Volunteer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Volunteer registered"
+          }
+        }
+      }
+    },
+    "/api/volunteers/{id}": {
+      "put": {
+        "summary": "Update a volunteer",
+        "tags": [
+          "Volunteers"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Volunteer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Volunteer updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a volunteer",
+        "tags": [
+          "Volunteers"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Volunteer deleted"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Achievements",
+      "description": "Achievement tracking and leaderboard"
+    },
+    {
+      "name": "Auth",
+      "description": "User authentication and management"
+    },
+    {
+      "name": "Tasks",
+      "description": "Cleanup task management"
+    },
+    {
+      "name": "Volunteers",
+      "description": "Volunteer registration and management"
+    }
+  ]
+}

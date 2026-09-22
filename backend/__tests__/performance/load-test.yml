@@ -1,0 +1,34 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      rampTo: 10
+      name: Warm up phase
+    - duration: 60
+      arrivalRate: 15
+      name: Sustained load phase
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: "Public Browsing Flow"
+    flow:
+      - get:
+          url: "/api/achievements/leaderboard"
+      - get:
+          url: "/api/tasks"
+      - get:
+          url: "/api/volunteers"
+
+  - name: "New Report Submission Simulation"
+    flow:
+      - post:
+          url: "/api/volunteers"
+          json:
+            name: "Perf Tester {{ $randomString() }}"
+            contact: "077-{{ $randomNumber(1000000, 9999999) }}"
+            role: "individual"
+            city: "Colombo"
+            skills: ["Testing"]
