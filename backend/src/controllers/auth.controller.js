@@ -43,7 +43,10 @@ class AuthController {
                 }
                 userRole = 'admin';
             } else if (role === 'Cleanup_Task_Manager') {
-                userRole = 'Cleanup_Task_Manager';
+                return res.status(403).json({
+                    success: false,
+                    message: 'Cleanup Task Manager accounts cannot be created through public registration'
+                });
             }
 
             const user = new User({ name, email, password, role: userRole });
