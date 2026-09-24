@@ -3,6 +3,11 @@ const router = express.Router();
 const TaskController = require('../controllers/taskController');
 const taskService = require('../services/taskService');
 const notificationService = require('../services/notificationService');
+const {
+    authenticate,
+    authorizeManager,
+    authorizeVolunteer
+} = require('../middleware/auth.middleware');
 
 const taskController = new TaskController(taskService, notificationService);
 
@@ -31,7 +36,9 @@ const taskController = new TaskController(taskService, notificationService);
  *               items:
  *                 $ref: '#/components/schemas/Task'
  */
-router.get('/', (req, res) => taskController.getTasks(req, res));
+router.get('/', authenticate, (req, res) =>
+    taskController.getTasks(req, res)
+);
 
 /**
  * @swagger
@@ -49,7 +56,12 @@ router.get('/', (req, res) => taskController.getTasks(req, res));
  *       201:
  *         description: Task created
  */
-router.post('/', (req, res) => taskController.createTask(req, res));
+router.post(
+    '/',
+    authenticate,
+    authorizeManager,
+    (req, res) => taskController.createTask(req, res)
+);
 
 /**
  * @swagger
@@ -73,7 +85,12 @@ router.post('/', (req, res) => taskController.createTask(req, res));
  *       200:
  *         description: Task updated
  */
-router.patch('/:id', (req, res) => taskController.updateTask(req, res));
+router.patch(
+    '/:id',
+    authenticate,
+    authorizeManager,
+    (req, res) => taskController.updateTask(req, res)
+);
 
 /**
  * @swagger
@@ -91,7 +108,12 @@ router.patch('/:id', (req, res) => taskController.updateTask(req, res));
  *       200:
  *         description: Task deleted
  */
-router.delete('/:id', (req, res) => taskController.deleteTask(req, res));
+router.delete(
+    '/:id',
+    authenticate,
+    authorizeManager,
+    (req, res) => taskController.deleteTask(req, res)
+);
 
 // Assignment and Completion routes
 
@@ -120,7 +142,12 @@ router.delete('/:id', (req, res) => taskController.deleteTask(req, res));
  *       200:
  *         description: Task assigned
  */
-router.patch('/:id/assign', (req, res) => taskController.assignTask(req, res));
+router.patch(
+    '/:id/assign',
+    authenticate,
+    authorizeManager,
+    (req, res) => taskController.assignTask(req, res)
+);
 
 /**
  * @swagger
@@ -138,6 +165,11 @@ router.patch('/:id/assign', (req, res) => taskController.assignTask(req, res));
  *       200:
  *         description: Task completed
  */
-router.patch('/:id/complete', (req, res) => taskController.completeTask(req, res));
+router.patch(
+    '/:id/complete',
+    authenticate,
+    authorizeVolunteer,
+    (req, res) => taskController.completeTask(req, res)
+);
 
 module.exports = router;
