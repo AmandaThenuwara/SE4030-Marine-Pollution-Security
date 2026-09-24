@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const volunteerController = require('../controllers/volunteerController');
+const {
+    authenticate,
+    authorizeVolunteerOwnerOrAdmin
+} = require('../middleware/auth.middleware');
 
 /**
  * @swagger
@@ -61,7 +65,12 @@ router.post('/', (req, res) => volunteerController.createVolunteer(req, res));
  *       200:
  *         description: Volunteer updated
  */
-router.put('/:id', (req, res) => volunteerController.updateVolunteer(req, res));
+router.put(
+    '/:id',
+    authenticate,
+    authorizeVolunteerOwnerOrAdmin,
+    (req, res) => volunteerController.updateVolunteer(req, res)
+);
 
 /**
  * @swagger
@@ -79,6 +88,11 @@ router.put('/:id', (req, res) => volunteerController.updateVolunteer(req, res));
  *       200:
  *         description: Volunteer deleted
  */
-router.delete('/:id', (req, res) => volunteerController.deleteVolunteer(req, res));
+router.delete(
+    '/:id',
+    authenticate,
+    authorizeVolunteerOwnerOrAdmin,
+    (req, res) => volunteerController.deleteVolunteer(req, res)
+);
 
 module.exports = router;

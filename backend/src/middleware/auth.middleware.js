@@ -1,3 +1,4 @@
+const Volunteer = require('../models/Volunteer');
 const jwt = require('jsonwebtoken');
 
 // Authentication middleware
@@ -105,11 +106,50 @@ const authorizeSelfOrAdmin = (req, res, next) => {
   }
 };
 
+const authorizeVolunteerOwnerOrAdmin = async (req, res, next) => {
+  try {
+    const volunteer = await Volunteer.findById(req.params.id);
+
+    if (!volunteer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Volunteer not found.'
+      });
+    }
+
+    // Admin can modify/delete any volunteer
+    if (req.user.role === 'admin') {
+      return next();
+    }
+
+    // Volunteer can modify/delete only their own volunteer record
+    if (
+      req.user.role === 'volunteer' &&
+      volunteer.userId &&
+      volunteer.userId.toString() === req.user.id.toString()
+    ) {
+      return next();
+    }
+
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. You can only modify your own volunteer profile.'
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Authorization error.'
+    });
+  }
+};
+
 module.exports = {
   authenticate,
-  authorize, // New generic factory
+  authorize,
   authorizeAdmin,
   authorizeVolunteer,
   authorizeManager,
-  authorizeSelfOrAdmin
+  authorizeSelfOrAdmin,
+  authorizeVolunteerOwnerOrAdmin
 };
