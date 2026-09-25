@@ -7,11 +7,24 @@ class AuthController {
         try {
             const { name, email, password, role, adminKey } = req.body;
 
-            // Validation
-            if (!name || !email || !password) {
+            // Strict Type & Presence Validation
+            if (
+                !name || typeof name !== 'string' ||
+                !email || typeof email !== 'string' ||
+                !password || typeof password !== 'string'
+            ) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Name, email, and password are required'
+                    message: 'Name, email, and password are required and must be valid strings'
+                });
+            }
+
+            const cleanEmail = email.trim().toLowerCase();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(cleanEmail)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Please provide a valid email address'
                 });
             }
 
@@ -27,7 +40,7 @@ class AuthController {
             }
 
             // Check if email already exists
-            const existingUser = await User.findOne({ email });
+            const existingUser = await User.findOne({ email: cleanEmail });
             if (existingUser) {
                 return res.status(409).json({
                     success: false,
@@ -53,7 +66,7 @@ class AuthController {
                 });
             }
 
-            const user = new User({ name, email, password, role: userRole });
+            const user = new User({ name: name.trim(), email: cleanEmail, password, role: userRole });
             await user.save();
 
             // Generate JWT token
@@ -91,15 +104,28 @@ class AuthController {
         try {
             const { email, password } = req.body;
 
-            if (!email || !password) {
+            // Strict Type & Presence Validation
+            if (
+                !email || typeof email !== 'string' ||
+                !password || typeof password !== 'string'
+            ) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Email and password are required'
+                    message: 'Email and password are required and must be valid strings'
                 });
             }
 
-            // Find user with password
-            const user = await User.findOne({ email, isActive: true }).select('+password');
+            const cleanEmail = email.trim().toLowerCase();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(cleanEmail)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid email format'
+                });
+            }
+
+            // Find user with password using sanitized scalar email
+            const user = await User.findOne({ email: cleanEmail, isActive: true }).select('+password');
             if (!user) {
                 return res.status(401).json({
                     success: false,
