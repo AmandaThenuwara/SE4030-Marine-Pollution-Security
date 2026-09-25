@@ -14,17 +14,24 @@ function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
+const SAFE_MIME_EXT_MAP = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+};
+
 function imageFileFilter(req, file, cb) {
-  const allowed = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowed.includes(file.mimetype)) {
-    return cb(new Error("Only jpg, png, webp images are allowed"));
+  const allowedExts = [".jpg", ".jpeg", ".png", ".webp"];
+  const ext = path.extname(file.originalname).toLowerCase();
+  
+  if (!allowedExts.includes(ext) || !SAFE_MIME_EXT_MAP[file.mimetype]) {
+    return cb(new Error("Only safe image formats (.jpg, .jpeg, .png, .webp) are allowed"));
   }
   cb(null, true);
 }
 
-function makeFileName(prefix, original) {
-  const ext = path.extname(original).toLowerCase();
-  const safeExt = ext || ".jpg";
+function makeFileName(prefix, original, mimetype) {
+  const safeExt = SAFE_MIME_EXT_MAP[mimetype] || ".jpg";
   return `${prefix}_${Date.now()}_${Math.round(Math.random() * 1e9)}${safeExt}`;
 }
 
@@ -39,7 +46,7 @@ const profileStorage = multer.diskStorage({
     cb(null, profilePicsDir);
   },
   filename: function (req, file, cb) {
-    cb(null, makeFileName("ch", file.originalname));
+    cb(null, makeFileName("ch", file.originalname, file.mimetype));
   },
 });
 
@@ -60,7 +67,7 @@ const reportPhotoStorage = multer.diskStorage({
     cb(null, reportPhotosDir);
   },
   filename: function (req, file, cb) {
-    cb(null, makeFileName("rep", file.originalname));
+    cb(null, makeFileName("rep", file.originalname, file.mimetype));
   },
 });
 

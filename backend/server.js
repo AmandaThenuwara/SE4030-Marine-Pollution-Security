@@ -15,8 +15,31 @@ const chReportRoutes = require("./src/routes/chReport.routes");
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swagger');
 
+const helmet = require("helmet");
+
 const app = express();
 const server = http.createServer(app);
+
+// Security Headers (Helmet)
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:", "http:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:", "http:", "https:"],
+        frameAncestors: ["'none'"],
+        objectSrc: ["'none'"],
+      },
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
+    xFrameOptions: { action: "deny" },
+    noSniff: true,
+  })
+);
 
 // Middleware
 const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:5174", "http://localhost:3000"].filter(Boolean);
@@ -51,8 +74,22 @@ app.set("io", io);
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const { sanitizeInputs } = require("./src/middleware/sanitize.middleware");
+app.use(sanitizeInputs);
+
+// Serve uploaded files with security headers (Prevent MIME-sniffing and SVG XSS)
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, 'uploads'), {
+    setHeaders: (res, filePath) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      const ext = path.extname(filePath).toLowerCase();
+      if (['.html', '.htm', '.svg', '.xml', '.pdf'].includes(ext)) {
+        res.setHeader('Content-Disposition', 'attachment');
+      }
+    },
+  })
+);
 
 // Routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
