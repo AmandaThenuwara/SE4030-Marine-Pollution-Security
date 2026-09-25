@@ -1,7 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const authController = require('../controllers/auth.controller');
 const { authenticate, authorizeAdmin } = require('../middleware/auth.middleware');
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 5,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Too many login attempts. Please try again after 15 minutes.'
+    }
+});
+
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 10,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Too many registration attempts. Please try again later.'
+    }
+});
 
 /**
  * @swagger
@@ -42,7 +65,11 @@ const { authenticate, authorizeAdmin } = require('../middleware/auth.middleware'
  *       400:
  *         description: Bad request
  */
-router.post('/register', authController.register);
+router.post(
+    '/register',
+    registerLimiter,
+    authController.register
+);
 
 /**
  * @swagger
@@ -70,7 +97,11 @@ router.post('/register', authController.register);
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', authController.login);
+router.post(
+    '/login',
+    loginLimiter,
+    authController.login
+);
 
 /**
  * @swagger
