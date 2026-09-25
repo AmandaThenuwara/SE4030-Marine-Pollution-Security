@@ -1,0 +1,785 @@
+{
+	"info": {
+		"_postman_id": "8f5a11e2-b91a-4d92-bf3e-marine-pollution-sec",
+		"name": "Marine Pollution - Security Testing",
+		"description": "Postman collection for SE4030 Secure Software Development security testing and baseline verification against the Marine Pollution Management local application.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0. Baseline Requests",
+			"item": [
+				{
+					"name": "0.1 Register - Normal Volunteer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Normal Volunteer\",\n  \"email\": \"volunteer_test1@gmail.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"volunteer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Baseline registration of a standard volunteer account."
+					},
+					"response": []
+				},
+				{
+					"name": "0.2 Login - Normal Volunteer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"volunteer_test1@gmail.com\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Baseline login returning JWT token."
+					},
+					"response": []
+				},
+				{
+					"name": "0.3 Get Current User Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Protected profile endpoint requiring valid Bearer token."
+					},
+					"response": []
+				},
+				{
+					"name": "0.4 Get All Tasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "Fetch all cleanup tasks."
+					},
+					"response": []
+				},
+				{
+					"name": "0.5 Create Cleanup Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location\": {\n    \"address\": \"Galle Face Beach\",\n    \"coordinates\": {\n      \"lat\": 6.9271,\n      \"lng\": 79.8612\n    }\n  },\n  \"description\": \"Plastic bottles and debris along the shoreline\",\n  \"severity\": \"Medium\",\n  \"priority\": \"Medium\",\n  \"workforceRequired\": 5,\n  \"wasteType\": \"Plastic\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "Create a new cleanup task. Copy returned `_id` into `{{taskId}}`."
+					},
+					"response": []
+				},
+				{
+					"name": "0.6 Update Cleanup Task",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Updated note: High priority cleanup\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks",
+								"{{taskId}}"
+							]
+						},
+						"description": "Update existing task."
+					},
+					"response": []
+				},
+				{
+					"name": "0.7 Delete Cleanup Task",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks",
+								"{{taskId}}"
+							]
+						},
+						"description": "Delete existing task by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "0.8 Get Volunteers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/volunteers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers"
+							]
+						},
+						"description": "Get volunteer list."
+					},
+					"response": []
+				},
+				{
+					"name": "0.9 Create Volunteer Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Kasun Perera\",\n  \"contact\": \"+94771234567\",\n  \"role\": \"individual\",\n  \"city\": \"Colombo\",\n  \"postalCode\": \"00300\",\n  \"skills\": [\"Diving\", \"First Aid\"],\n  \"available\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/volunteers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers"
+							]
+						},
+						"description": "Create volunteer profile. Copy returned `_id` into `{{volunteerId}}`."
+					},
+					"response": []
+				},
+				{
+					"name": "0.10 Update Volunteer Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Kasun Perera (Updated)\",\n  \"contact\": \"+94771234567\",\n  \"city\": \"Dehiwala\",\n  \"available\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/volunteers/{{volunteerId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers",
+								"{{volunteerId}}"
+							]
+						},
+						"description": "Update volunteer profile."
+					},
+					"response": []
+				},
+				{
+					"name": "0.11 Delete Volunteer Profile",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/volunteers/{{volunteerId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers",
+								"{{volunteerId}}"
+							]
+						},
+						"description": "Delete volunteer profile."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "1. Broken Access Control & IDOR",
+			"item": [
+				{
+					"name": "BAC-01: Unauthenticated Task Deletion (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks",
+								"{{taskId}}"
+							]
+						},
+						"description": "VULNERABILITY TEST 1.1:\nMissing authentication and role check on cleanup task deletion.\nExpected Vulnerable Result: 200 OK with `{\"message\": \"Task deleted successfully\"}` without supplying any Authorization token.\nExpected Secure Result: 401 Unauthorized."
+					},
+					"response": []
+				},
+				{
+					"name": "BAC-02: Volunteer Profile IDOR Modification (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Tampered Victim Record\",\n  \"contact\": \"+94000000000\",\n  \"city\": \"Hacked City\",\n  \"available\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/volunteers/{{volunteerId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers",
+								"{{volunteerId}}"
+							]
+						},
+						"description": "VULNERABILITY TEST 1.2:\nInsecure Direct Object Reference (IDOR) on volunteer profile update without ownership verification.\nExpected Vulnerable Result: 200 OK returning the tampered volunteer document.\nExpected Secure Result: 401 Unauthorized or 403 Forbidden."
+					},
+					"response": []
+				},
+				{
+					"name": "BAC-03: Privilege Escalation at Registration (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Privilege Escalation Attacker\",\n  \"email\": \"attacker_manager@test.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"Cleanup_Task_Manager\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "VULNERABILITY TEST 1.3:\nVertical privilege escalation by requesting `Cleanup_Task_Manager` role during open registration without authorization key.\nExpected Vulnerable Result: 201 Created with role `Cleanup_Task_Manager`.\nExpected Secure Result: 400 Bad Request or role defaulted to `volunteer`."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Authentication Weaknesses",
+			"item": [
+				{
+					"name": "AUTH-01: Trivial Password Complexity Bypass (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Weak Password User\",\n  \"email\": \"weak_user_1@gmail.com\",\n  \"password\": \"123456\",\n  \"role\": \"volunteer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "VULNERABILITY TEST 2.1:\nTrivial password acceptance (only checks length >= 6, no complexity requirement for numbers, symbols, uppercase).\nExpected Vulnerable Result: 201 Created with `123456`.\nExpected Secure Result: 400 Bad Request with password complexity requirements."
+					},
+					"response": []
+				},
+				{
+					"name": "AUTH-02: Hardcoded Seeded Admin Login (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "VULNERABILITY TEST 2.2a:\nHardcoded default administrator credentials created by backend seeder on every startup.\nExpected Vulnerable Result: 200 OK logging in as Default Admin with `role: admin`.\nExpected Secure Result: Seeder removed or enforced one-time dynamic initial password prompt."
+					},
+					"response": []
+				},
+				{
+					"name": "AUTH-03: Hardcoded Seeded Manager Login (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"cleanup@gmail.com\",\n  \"password\": \"cleanup123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "VULNERABILITY TEST 2.2b:\nHardcoded default manager credentials created by backend seeder on every startup.\nExpected Vulnerable Result: 200 OK logging in as Cleanup Task Manager with `role: Cleanup_Task_Manager`.\nExpected Secure Result: Seeder removed."
+					},
+					"response": []
+				},
+				{
+					"name": "AUTH-04: Lack of Login Rate Limiting (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"password\": \"wrong_password_attempt\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "VULNERABILITY TEST 2.3:\nAbsence of rate limiting on login endpoint allowing brute-force dictionary attacks.\nExpected Vulnerable Result: Repeated rapid requests continuously return 401 without HTTP 429 Too Many Requests blocking.\nExpected Secure Result: 429 Too Many Requests after 5-10 failed attempts."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Sensitive Data & Secret Exposure",
+			"item": [
+				{
+					"name": "DATA-01: Public Exposure of Volunteer PII (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/volunteers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers"
+							]
+						},
+						"description": "VULNERABILITY TEST 3.1:\nPublic unrestricted exposure of Volunteer PII (phone number, full name, address/city, schedule).\nExpected Vulnerable Result: 200 OK returning all volunteer personal details without requiring authentication.\nExpected Secure Result: 401 Unauthorized (requiring admin/authenticated authorization)."
+					},
+					"response": []
+				},
+				{
+					"name": "DATA-02: Forged JWT Using Hardcoded Fallback Secret (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZGYxMjM0NTY3ODkwYWJjZGVmMTIzNCIsImVtYWlsIjoiZm9yZ2VkX2FkbWluQHRlc3QuY29tIiwicm9sZSI6ImFkbWluIiwibmFtZSI6IkZvcmdlZCBBZG1pbiIsImlhdCI6MTc5MDA5NzM0NCwiZXhwIjoxNzkyNjg5MzQ0fQ.IXc7ygvT2XZJVM9L0Y4LuvHaztr-anqd9HJalg2F6jk"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/volunteers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"volunteers"
+							]
+						},
+						"description": "VULNERABILITY TEST 3.2:\nUsing a forged JWT signed with the codebase's hardcoded fallback secret 'your-secret-key' to access protected admin endpoint.\nExpected Vulnerable Result: 200 OK accepting the forged admin token when JWT_SECRET is not set in production.\nExpected Secure Result: Server rejects application boot if JWT_SECRET is missing or weak."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Cross-Site Scripting (XSS) & Unsafe Uploads",
+			"item": [
+				{
+					"name": "XSS-01: Stored XSS via Task Payload Injection (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location\": {\n    \"address\": \"<img src=x onerror=alert('Stored-XSS-Location')>\",\n    \"coordinates\": {\n      \"lat\": 6.9271,\n      \"lng\": 79.8612\n    }\n  },\n  \"description\": \"<script>alert('Stored-XSS-Description')</script> Debris at coast\",\n  \"severity\": \"High\",\n  \"priority\": \"High\",\n  \"workforceRequired\": 10,\n  \"wasteType\": \"Plastic\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "VULNERABILITY TEST 4.1:\nInjecting unescaped HTML/JavaScript tags into stored database fields.\nExpected Vulnerable Result: 201 Created storing raw HTML tags verbatim into MongoDB.\nExpected Secure Result: Input sanitized with DOMPurify / sanitize-html or schema validation rejecting HTML tags."
+					},
+					"response": []
+				},
+				{
+					"name": "XSS-02: Missing Security Headers on Static Uploads (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/uploads/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"uploads",
+								""
+							]
+						},
+						"description": "VULNERABILITY TEST 4.2:\nVerifying that static express file server lacks Content-Disposition: attachment and X-Content-Type-Options: nosniff headers.\nExpected Vulnerable Result: Headers tab lacks X-Content-Type-Options and Content-Security-Policy.\nExpected Secure Result: Helmet and Content-Disposition enforced on uploaded assets."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Input Validation & NoSQL Injection",
+			"item": [
+				{
+					"name": "NOSQL-01: NoSQL Object Injection in Auth Query (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": {\n    \"$ne\": null\n  },\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "VULNERABILITY TEST 5.1:\nSubmitting a MongoDB operator object `{\"$ne\": null}` in place of a string for the email field.\nExpected Vulnerable Result: 200 OK logging into the first active user matched in the collection (or executing the operator query without type error).\nExpected Secure Result: 400 Bad Request (Email must be a string)."
+					},
+					"response": []
+				},
+				{
+					"name": "NOSQL-02: Query Parameter Operator Injection in Filtering (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/tasks?status[$ne]=Completed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "status[$ne]",
+									"value": "Completed"
+								}
+							]
+						},
+						"description": "VULNERABILITY TEST 5.2:\nPassing nested query parameters `?status[$ne]=Completed` spread directly into Mongoose `Task.find()`.\nExpected Vulnerable Result: 200 OK returning all tasks where status is NOT 'Completed' via raw MongoDB operator execution.\nExpected Secure Result: Query parameters validated against strict string allowlist or sanitized with express-mongo-sanitize."
+					},
+					"response": []
+				},
+				{
+					"name": "NOSQL-03: Mass Assignment in Volunteer Creation (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mass Assignment Test User\",\n  \"contact\": \"+94770000000\",\n  \"role\": \"team\",\n  \"teamSize\": 50,\n  \"unauthorizedField\": \"AttackerInjectedField\",\n  \"available\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/volunteers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers"
+							]
+						},
+						"description": "VULNERABILITY TEST 5.3:\nPassing arbitrary unvalidated fields directly into `new Volunteer(req.body)`.\nExpected Vulnerable Result: 201 Created accepting arbitrary request body without DTO/Zod validation schema.\nExpected Secure Result: 400 Bad Request with strict validation schema."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Security Misconfiguration",
+			"item": [
+				{
+					"name": "MISCONFIG-01: Permissive CORS Origin Reflection (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://malicious-phishing-site.vercel.app"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "VULNERABILITY TEST 6.1:\nTesting overly permissive CORS policy that accepts ANY origin ending with `.vercel.app` with `Access-Control-Allow-Credentials: true`.\nExpected Vulnerable Result: Response headers include `Access-Control-Allow-Origin: https://malicious-phishing-site.vercel.app` and `Access-Control-Allow-Credentials: true`.\nExpected Secure Result: CORS rejects unknown origins."
+					},
+					"response": []
+				},
+				{
+					"name": "MISCONFIG-02: Public Unauthenticated Swagger UI (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api-docs/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api-docs",
+								""
+							]
+						},
+						"description": "VULNERABILITY TEST 6.2:\nPublic exposure of full API Swagger UI documentation exposing all schemas and private endpoints.\nExpected Vulnerable Result: 200 OK returning HTML Swagger documentation.\nExpected Secure Result: Disabled in production or protected by basic auth/VPN."
+					},
+					"response": []
+				},
+				{
+					"name": "MISCONFIG-03: Missing HTTP Security Headers / No Helmet (BEFORE-FIX)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								""
+							]
+						},
+						"description": "VULNERABILITY TEST 6.3:\nAbsence of standard security headers (X-Frame-Options, CSP, HSTS, X-Content-Type-Options).\nExpected Vulnerable Result: Response Headers tab lacks Helmet headers (X-Frame-Options, Content-Security-Policy).\nExpected Secure Result: Full suite of HTTP security headers present."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
