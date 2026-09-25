@@ -7,8 +7,15 @@ class TaskController {
     getTasks = async (req, res) => {
         try {
             const filters = {};
-            if (req.query.status) filters.status = req.query.status;
-            if (req.query.priority) filters.priority = req.query.priority;
+            const allowedStatuses = ['Pending', 'Assigned', 'In Progress', 'Completed'];
+            const allowedPriorities = ['Low', 'Medium', 'High'];
+
+            if (req.query.status && typeof req.query.status === 'string' && allowedStatuses.includes(req.query.status)) {
+                filters.status = req.query.status;
+            }
+            if (req.query.priority && typeof req.query.priority === 'string' && allowedPriorities.includes(req.query.priority)) {
+                filters.priority = req.query.priority;
+            }
 
             const tasks = await this.taskService.getAllTasks(filters);
             res.json(tasks);
@@ -20,7 +27,40 @@ class TaskController {
 
     createTask = async (req, res) => {
         try {
-            const task = await this.taskService.create_task(req.body);
+            const {
+                location,
+                description,
+                severity,
+                priority,
+                status,
+                assignedTo,
+                workforceRequired,
+                deadline,
+                wasteType,
+                notes
+            } = req.body;
+
+            if (!description || typeof description !== 'string') {
+                return res.status(400).json({ message: 'Description is required and must be a string' });
+            }
+            if (!location || typeof location !== 'object' || !location.address) {
+                return res.status(400).json({ message: 'Valid location with address is required' });
+            }
+
+            const cleanData = {
+                location,
+                description: description.trim(),
+                severity,
+                priority,
+                status,
+                assignedTo: typeof assignedTo === 'string' ? assignedTo : null,
+                workforceRequired,
+                deadline,
+                wasteType,
+                notes
+            };
+
+            const task = await this.taskService.create_task(cleanData);
             req.app.get("io").emit("task_created", task);
             res.status(201).json(task);
         } catch (error) {
@@ -31,7 +71,19 @@ class TaskController {
 
     updateTask = async (req, res) => {
         try {
-            const task = await this.taskService.updateTask(req.params.id, req.body);
+            const allowedFields = [
+                'location', 'description', 'severity', 'priority',
+                'status', 'assignedTo', 'workforceRequired', 'deadline',
+                'wasteType', 'notes'
+            ];
+            const cleanUpdate = {};
+            for (const field of allowedFields) {
+                if (req.body[field] !== undefined) {
+                    cleanUpdate[field] = req.body[field];
+                }
+            }
+
+            const task = await this.taskService.updateTask(req.params.id, cleanUpdate);
             if (!task) return res.status(404).json({ message: 'Task not found' });
             req.app.get("io").emit("task_updated", task);
             res.json(task);
@@ -54,7 +106,11 @@ class TaskController {
     assignTask = async (req, res) => {
         try {
             const { volunteerId } = req.body;
-            const task = await this.taskService.assignTask(req.params.id, volunteerId);
+            if (!volunteerId || typeof volunteerId !== 'string') {
+                return res.status(400).json({ message: 'Volunteer ID must be a valid string' });
+            }
+
+            const task = await this.taskService.assignTask(req.params.id, volunteerId.trim());
             if (!task) return res.status(404).json({ message: 'Task not found' });
 
             // Trigger Notification

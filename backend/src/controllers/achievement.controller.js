@@ -82,24 +82,41 @@ class AchievementController {
         });
       }
 
-      // Build filters
-      const filters = {
-        badgeType,
-        level,
-        volunteerId,
-        startDate,
-        endDate
-      };
+      // Build sanitized filters
+      const validBadgeTypes = ['Gold', 'Silver', 'Bronze'];
+      const validLevels = ['Beginner', 'Intermediate', 'Advanced'];
+      const validSortFields = ['createdAt', 'pointsAwarded', 'activityTitle'];
 
-      if (volunteerId && !mongoose.Types.ObjectId.isValid(volunteerId)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid volunteer ID format'
-        });
+      const filters = {};
+      if (badgeType && typeof badgeType === 'string' && validBadgeTypes.includes(badgeType)) {
+        filters.badgeType = badgeType;
+      }
+      if (level && typeof level === 'string' && validLevels.includes(level)) {
+        filters.level = level;
+      }
+      if (req.query.status && typeof req.query.status === 'string' && ['pending', 'approved', 'rejected'].includes(req.query.status)) {
+        filters.status = req.query.status;
+      }
+      if (startDate && typeof startDate === 'string') {
+        filters.startDate = startDate;
+      }
+      if (endDate && typeof endDate === 'string') {
+        filters.endDate = endDate;
+      }
+
+      if (volunteerId) {
+        if (typeof volunteerId !== 'string' || !mongoose.Types.ObjectId.isValid(volunteerId)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid volunteer ID format'
+          });
+        }
+        filters.volunteerId = volunteerId;
       }
 
       // Build sort
-      const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+      const safeSortBy = typeof sortBy === 'string' && validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const sort = { [safeSortBy]: sortOrder === 'asc' ? 1 : -1 };
 
       const pagination = { page: pageNum, limit: limitNum };
 

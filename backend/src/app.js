@@ -8,11 +8,14 @@ const notFound = require("./middlewares/notFound");
 const errorHandler = require("./middlewares/errorHandler");
 const { swaggerSpec } = require("./config/swagger");
 
+const mongoSanitize = require("./middleware/mongoSanitize.middleware");
+
 const app = express();
 
 // Middleware
 app.use(cors()); // keep open for now
 app.use(express.json());
+app.use(mongoSanitize);
 
 // Serve uploaded files
 const uploadDir = process.env.UPLOAD_DIR || "uploads";
