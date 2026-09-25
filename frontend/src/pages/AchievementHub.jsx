@@ -24,6 +24,17 @@ const LEVEL_COLORS = {
   Beginner: 'bg-slate-700 text-slate-300 border-slate-600',
 };
 
+// Helper to validate and sanitize evidence URLs (Prevent open redirects & javascript: execution)
+const getSafeEvidenceUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('/uploads/')) {
+    const backendBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    return `${backendBase}${trimmed}`;
+  }
+  return null;
+};
+
 const AchievementHub = () => {
   const [achievements, setAchievements] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
@@ -381,9 +392,9 @@ const AchievementHub = () => {
                       <td className="px-6 py-4 max-w-xs">
                         <div className="text-sm font-semibold text-white mb-0.5">{a.activityTitle}</div>
                         <p className="text-xs text-slate-500 line-clamp-1 leading-relaxed mb-1.5">{a.description}</p>
-                        {a.evidenceUrl && (
+                        {getSafeEvidenceUrl(a.evidenceUrl) && (
                           <a
-                            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${a.evidenceUrl}`}
+                            href={getSafeEvidenceUrl(a.evidenceUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-400 hover:text-teal-300 transition-colors"

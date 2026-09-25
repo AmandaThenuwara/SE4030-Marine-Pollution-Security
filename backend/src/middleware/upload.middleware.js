@@ -9,28 +9,36 @@ if (!fs.existsSync(uploadsDir)) {
   console.log('Created uploads directory:', uploadsDir);
 }
 
-// Configure storage
+const MIME_TO_EXT = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif'
+};
+
+// Configure storage with sanitized extension mapping
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'achievement-' + uniqueSuffix + path.extname(file.originalname));
+    const safeExt = MIME_TO_EXT[file.mimetype] || '.jpg';
+    cb(null, 'achievement-' + uniqueSuffix + safeExt);
   }
 });
 
-// File filter to accept only images
+// File filter to accept strictly authorized image formats
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'));
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  
+  // Reject SVGs, HTML, executables and mismatched MIME headers
+  if (!allowedExtensions.includes(ext) || !MIME_TO_EXT[file.mimetype]) {
+    return cb(new Error('Only safe image files (jpeg, jpg, png, gif, webp) are allowed. Vector (SVG) and executable files are blocked.'));
   }
+
+  cb(null, true);
 };
 
 // Configure multer
