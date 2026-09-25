@@ -1,8 +1,9 @@
 const Volunteer = require('../models/Volunteer');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user.model');
 
 // Authentication middleware
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
@@ -13,13 +14,32 @@ const authenticate = (req, res, next) => {
       });
     }
 
-    // Verify token (you'll need to set JWT_SECRET in your .env file)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'your-secret-key'
+    );
 
-    // Add user info to request
-    req.user = decoded;
+    // Check the current account state in the database
+    const user = await User.findById(decoded.id)
+      .select('name email role isActive');
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'User account is deactivated or no longer exists.'
+      });
+    }
+
+    // Use current database values instead of stale JWT claims
+    req.user = {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role
+    };
 
     next();
+
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
