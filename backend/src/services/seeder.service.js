@@ -3,31 +3,49 @@ const User = require('../models/user.model');
 class SeederService {
     async seedDefaultUsers() {
         try {
-            // Seed default Cleanup Task Manager
-            const cleanupExists = await User.findOne({ email: "cleanup@gmail.com" });
-            if (!cleanupExists) {
-                await User.create({
-                    name: "Cleanup Task Manager",
-                    email: "cleanup@gmail.com",
-                    password: "cleanup123",
-                    role: "Cleanup_Task_Manager"
+            const adminEmail = process.env.INITIAL_ADMIN_EMAIL;
+            const adminPassword = process.env.INITIAL_ADMIN_PASSWORD;
+
+            const managerEmail = process.env.INITIAL_MANAGER_EMAIL;
+            const managerPassword = process.env.INITIAL_MANAGER_PASSWORD;
+
+            // Do not create privileged accounts unless credentials
+            // are explicitly configured by the deployment environment.
+            if (managerEmail && managerPassword) {
+                const managerExists = await User.findOne({
+                    email: managerEmail
                 });
-                console.log("✅ Default Cleanup Task Manager created (cleanup@gmail.com / cleanup123)");
+
+                if (!managerExists) {
+                    await User.create({
+                        name: 'Cleanup Task Manager',
+                        email: managerEmail,
+                        password: managerPassword,
+                        role: 'Cleanup_Task_Manager'
+                    });
+
+                    console.log('Initial Cleanup Task Manager created.');
+                }
             }
 
-            // Seed default admin
-            const adminExists = await User.findOne({ email: "admin@gmail.com" });
-            if (!adminExists) {
-                await User.create({
-                    name: "Default Admin",
-                    email: "admin@gmail.com",
-                    password: "admin123",
-                    role: "admin"
+            if (adminEmail && adminPassword) {
+                const adminExists = await User.findOne({
+                    email: adminEmail
                 });
-                console.log("✅ Default admin user created (admin@gmail.com / admin123)");
+
+                if (!adminExists) {
+                    await User.create({
+                        name: 'Initial Admin',
+                        email: adminEmail,
+                        password: adminPassword,
+                        role: 'admin'
+                    });
+
+                    console.log('Initial admin account created.');
+                }
             }
         } catch (err) {
-            console.error("Seeding error:", err.message);
+            console.error('Seeding error:', err.message);
         }
     }
 }

@@ -15,10 +15,14 @@ class AuthController {
                 });
             }
 
-            if (password.length < 6) {
+            const passwordPolicy =
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+            if (!passwordPolicy.test(password)) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Password must be at least 6 characters'
+                    message:
+                        'Password must be at least 8 characters and include an uppercase letter, lowercase letter, number, and special character'
                 });
             }
 
