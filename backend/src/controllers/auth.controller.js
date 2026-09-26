@@ -51,11 +51,11 @@ class AuthController {
             // If registering as admin, validate admin key
             let userRole = 'volunteer';
             if (role === 'admin') {
-                const expectedKey = process.env.ADMIN_REGISTER_KEY || 'admin-secret-key';
-                if (!adminKey || adminKey !== expectedKey) {
+                const expectedKey = process.env.ADMIN_REGISTER_KEY;
+                if (!expectedKey || !adminKey || adminKey !== expectedKey) {
                     return res.status(403).json({
                         success: false,
-                        message: 'Invalid admin registration key'
+                        message: 'Invalid admin registration key or admin registration is disabled'
                     });
                 }
                 userRole = 'admin';
@@ -70,9 +70,17 @@ class AuthController {
             await user.save();
 
             // Generate JWT token
+            const jwtSecret = process.env.JWT_SECRET;
+            if (!jwtSecret) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Server configuration error: JWT_SECRET is not configured'
+                });
+            }
+
             const token = jwt.sign(
                 { id: user._id, email: user.email, role: user.role, name: user.name },
-                process.env.JWT_SECRET || 'your-secret-key',
+                jwtSecret,
                 { expiresIn: '7d' }
             );
 
@@ -143,9 +151,17 @@ class AuthController {
             }
 
             // Generate JWT token
+            const jwtSecret = process.env.JWT_SECRET;
+            if (!jwtSecret) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Server configuration error: JWT_SECRET is not configured'
+                });
+            }
+
             const token = jwt.sign(
                 { id: user._id, email: user.email, role: user.role, name: user.name },
-                process.env.JWT_SECRET || 'your-secret-key',
+                jwtSecret,
                 { expiresIn: '7d' }
             );
 
