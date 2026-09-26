@@ -11,6 +11,11 @@ export const authService = {
         return await api.post('/auth/login', credentials);
     },
 
+    // Google OpenID Connect Login
+    googleLogin: async (idToken) => {
+        return await api.post('/auth/google', { idToken });
+    },
+
     // Get current user profile
     getProfile: async () => {
         return await api.get('/auth/profile');

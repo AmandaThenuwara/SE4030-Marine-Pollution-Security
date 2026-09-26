@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 const User = require('../models/user.model');
 
 class AuthController {
@@ -224,6 +225,163 @@ class AuthController {
             res.status(500).json({
                 success: false,
                 message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+    // Google OpenID Connect / OAuth 2.0 Login
+    async googleLogin(req, res) {
+        try {
+            const { idToken } = req.body;
+
+            // 1. Strict Input Validation
+            if (!idToken || typeof idToken !== 'string' || idToken.length > 8192) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'A valid Google ID token is required'
+                });
+            }
+
+            // 2. Cryptographic verification with Google tokeninfo endpoint
+            let googlePayload;
+            try {
+                const googleResponse = await axios.get('https://oauth2.googleapis.com/tokeninfo', {
+                    params: { id_token: idToken },
+                    timeout: 10000
+                });
+                googlePayload = googleResponse.data;
+            } catch (err) {
+                console.error('Google token verification failed:', err.response?.data || err.message);
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid or expired Google authentication token'
+                });
+            }
+
+            // 3. Verify Google Token Claims
+            const { sub: googleId, email, email_verified, name, picture, aud, iss, exp } = googlePayload;
+
+            if (!googleId || !email) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Incomplete Google profile information provided'
+                });
+            }
+
+            // Ensure email is verified by Google to prevent identity spoofing
+            if (email_verified !== 'true' && email_verified !== true) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Google account email address is not verified'
+                });
+            }
+
+            // Validate Audience (Client ID) if configured on server
+            const configuredClientId = process.env.GOOGLE_CLIENT_ID;
+            if (configuredClientId && aud !== configuredClientId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Token audience mismatch: Unauthorized Google Client ID'
+                });
+            }
+
+            // Validate Issuer
+            if (iss !== 'accounts.google.com' && iss !== 'https://accounts.google.com') {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid token issuer'
+                });
+            }
+
+            // Validate Expiration
+            if (exp && Number(exp) * 1000 < Date.now()) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Google authentication token has expired'
+                });
+            }
+
+            const cleanEmail = email.trim().toLowerCase();
+
+            // 4. Find existing user or register safe volunteer
+            let user = await User.findOne({
+                $or: [{ googleId }, { email: cleanEmail }]
+            });
+
+            if (user) {
+                // Check if account is active
+                if (!user.isActive) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Account is deactivated. Please contact an administrator.'
+                    });
+                }
+
+                // If user registered with local password previously, link their Google ID securely
+                let modified = false;
+                if (!user.googleId) {
+                    user.googleId = googleId;
+                    modified = true;
+                }
+                if (!user.avatar && picture) {
+                    user.avatar = picture;
+                    modified = true;
+                }
+                if (modified) {
+                    await user.save();
+                }
+            } else {
+                // Register NEW user via Google - SAFE DEFAULT ROLE: volunteer ONLY
+                // Explicitly prevent role tampering or creation of admin/manager accounts via OAuth
+                const safeName = (typeof name === 'string' && name.trim()) ? name.trim() : 'Google Volunteer';
+                user = new User({
+                    name: safeName,
+                    email: cleanEmail,
+                    googleId,
+                    authProvider: 'google',
+                    role: 'volunteer', // Never allow elevated privileges from OAuth signup
+                    avatar: picture || '',
+                    isActive: true
+                });
+
+                await user.save();
+            }
+
+            // 5. Generate Application JWT Token
+            const jwtSecret = process.env.JWT_SECRET;
+            if (!jwtSecret) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Server configuration error: JWT_SECRET is not configured'
+                });
+            }
+
+            const token = jwt.sign(
+                { id: user._id, email: user.email, role: user.role, name: user.name },
+                jwtSecret,
+                { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: 'Google authentication successful',
+                data: {
+                    user: {
+                        id: user._id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                        avatar: user.avatar || ''
+                    },
+                    token
+                }
+            });
+
+        } catch (error) {
+            console.error('Error in googleLogin:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error during Google authentication'
             });
         }
     }

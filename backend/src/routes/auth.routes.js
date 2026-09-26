@@ -105,6 +105,40 @@ router.post(
 
 /**
  * @swagger
+ * /api/auth/google:
+ *   post:
+ *     summary: Authenticate with Google OpenID Connect / OAuth 2.0 ID Token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idToken
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 description: Google ID token (JWT) returned from Google Identity Services
+ *     responses:
+ *       200:
+ *         description: Google authentication successful
+ *       400:
+ *         description: Missing or invalid token parameter
+ *       401:
+ *         description: Invalid or expired Google token
+ *       403:
+ *         description: Unverified Google email or deactivated account
+ */
+router.post(
+    '/google',
+    loginLimiter,
+    authController.googleLogin
+);
+
+/**
+ * @swagger
  * /api/auth/profile:
  *   get:
  *     summary: Get current user profile

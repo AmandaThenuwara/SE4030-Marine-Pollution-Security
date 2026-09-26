@@ -66,6 +66,62 @@
 					"response": []
 				},
 				{
+					"name": "0.2.1 Google OAuth Login - Missing Token (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/google",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"google"
+							]
+						},
+						"description": "Validation test: Server returns 400 when Google ID token is missing."
+					},
+					"response": []
+				},
+				{
+					"name": "0.2.2 Google OAuth Login - Invalid Token (401)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idToken\": \"invalid_mock_google_id_token_xyz\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/google",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"google"
+							]
+						},
+						"description": "Security test: Server rejects fake or untrusted Google token with 401 Unauthorized."
+					},
+					"response": []
+				},
+				{
 					"name": "0.3 Get Current User Profile",
 					"request": {
 						"auth": {

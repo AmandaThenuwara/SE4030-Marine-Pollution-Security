@@ -19,9 +19,25 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
+        required: [function () {
+            return this.authProvider === 'local';
+        }, 'Password is required for local accounts'],
         minlength: [8, 'Password must be at least 8 characters'],
         select: false
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    authProvider: {
+        type: String,
+        enum: ['local', 'google'],
+        default: 'local'
+    },
+    avatar: {
+        type: String,
+        default: ''
     },
     role: {
         type: String,
@@ -40,10 +56,11 @@ const userSchema = new mongoose.Schema({
 
 // Index for faster queries
 userSchema.index({ role: 1 });
+userSchema.index({ googleId: 1 }, { sparse: true });
 
 // Hash password before saving
 userSchema.pre('save', async function () {
-    if (!this.isModified('password')) return;
+    if (!this.password || !this.isModified('password')) return;
 
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -51,6 +68,7 @@ userSchema.pre('save', async function () {
 
 // Compare password method
 userSchema.methods.comparePassword = async function (candidatePassword) {
+    if (!this.password) return false;
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
