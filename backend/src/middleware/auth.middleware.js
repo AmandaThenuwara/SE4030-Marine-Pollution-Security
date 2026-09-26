@@ -14,10 +14,15 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'your-secret-key'
-    );
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error: JWT_SECRET is not configured'
+      });
+    }
+
+    const decoded = jwt.verify(token, jwtSecret);
 
     // Check the current account state in the database
     const user = await User.findById(decoded.id)

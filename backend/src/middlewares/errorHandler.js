@@ -6,27 +6,25 @@ module.exports = function errorHandler(err, req, res, next) {
   // Mongoose: invalid ObjectId
   if (err.name === "CastError") {
     statusCode = 400;
-    message = "Invalid ID format";
+    message = "Invalid resource identifier format";
   }
 
   // Mongoose: duplicate key error
   if (err.code === 11000) {
     statusCode = 409;
-    const fields = Object.keys(err.keyValue || {});
-    message = `Duplicate value for field(s): ${fields.join(", ")}`;
+    message = "Duplicate entry detected";
   }
 
   // Mongoose: validation error
   if (err.name === "ValidationError") {
     statusCode = 400;
-    const errors = Object.values(err.errors || {}).map((e) => e.message);
-    message = errors.length ? errors.join(", ") : "Validation error";
+    message = "Validation error occurred";
   }
 
   res.status(statusCode).json({
     success: false,
     message,
-    // show stack only in development
-    ...(process.env.NODE_ENV !== "production" ? { stack: err.stack } : {}),
+    // show stack strictly in development mode
+    ...(process.env.NODE_ENV === "development" ? { stack: err.stack } : {}),
   });
 };

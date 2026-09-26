@@ -16,6 +16,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swagger');
 
 const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 const server = http.createServer(app);
@@ -41,40 +42,56 @@ app.use(
   })
 );
 
-// Middleware
-const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:5174", "http://localhost:3000"].filter(Boolean);
+// Middleware - Strict CORS configuration
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:3000"
+].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    
-    const isVercel = origin.endsWith('.vercel.app');
-    const isAllowed = allowedOrigins.includes(origin);
-    
-    if (isAllowed || isVercel || process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS policy violation'), false);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    return callback(new Error('CORS policy violation: Unauthorized origin'), false);
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
+// Socket.io with strict origin matching
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST", "PATCH", "DELETE"]
+    origin: allowedOrigins.length > 0 ? allowedOrigins : ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"],
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true
   }
 });
 
 // Expose io to request object
 app.set("io", io);
 
+// Global API Rate Limiter
+const globalApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 300, // 300 requests per 15 minutes per IP
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again after 15 minutes.'
+  }
+});
 
 const mongoSanitize = require("./src/middleware/mongoSanitize.middleware");
 
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
+// Reasonable payload size limits (1MB) to prevent Denial of Service
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
 app.use(mongoSanitize);
 
 const { sanitizeInputs } = require("./src/middleware/sanitize.middleware");
@@ -94,8 +111,15 @@ app.use(
   })
 );
 
+// Swagger documentation protected/restricted in production
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
+
+// Apply global rate limiting to all /api routes
+app.use('/api', globalApiLimiter);
+
 // Routes
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/tasks", taskRoutes);
 app.use("/api/volunteers", volunteerRoutes);
 app.use("/api/auth", authRoutes);
