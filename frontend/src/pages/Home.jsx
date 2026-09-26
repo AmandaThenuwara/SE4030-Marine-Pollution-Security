@@ -32,8 +32,8 @@ const Home = () => {
           </div>
 
           {/* Hero content */}
-          <div className="relative z-10 max-w-7xl mx-auto text-center h-100vh">
-            
+          <div className="relative z-10 max-w-6xl mx-auto text-center h-100vh">
+
 
             <h1 className="text-6xl md:text-7xl font-normal tracking-tighter leading-[0.9] mb-8 animate-fade-in text-white mt-20" style={{ animationDelay: '100ms' }}>
               Protecting Our <span className="bg-gradient-to-r from-[#00F5D4] to-[#00BFFF] bg-clip-text text-transparent">Oceans</span> <br />
@@ -75,7 +75,7 @@ const Home = () => {
           </div>
         </section>
 
-        
+
         {/* Impact Message Section */}
         <section className="py-12 px-4">
           <div className="max-w-5xl mx-auto text-center border-y border-slate-100 py-24 px-4">
@@ -84,7 +84,7 @@ const Home = () => {
               " Protect Our Oceans, Preserve Our Future "
             </h3>
             <p className="max-w-3xl mx-auto text-lg md:text-xl text-slate-600 font-normal leading-relaxed mb-10">
-              Marine pollution threatens the beauty and life beneath the waves. Join us in reducing waste, 
+              Marine pollution threatens the beauty and life beneath the waves. Join us in reducing waste,
               protecting marine ecosystems, and creating a cleaner, healthier ocean for generations to come.
             </p>
             <div className="flex items-center justify-center gap-4">
@@ -122,14 +122,14 @@ const Home = () => {
           </div>
         </section>
 
-        
+
         {/* Level Tiers Section */}
         <section className="px-4 py-32 max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-normal text-slate-900 tracking-tight mb-4">Evolution Tiers</h2>
             <p className="text-slate-500 font-normal text-lg">Progress through our ranks and unlock exclusive recognition badges.</p>
           </div>
- 
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
