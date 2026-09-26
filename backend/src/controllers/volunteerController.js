@@ -3,9 +3,14 @@ const volunteerService = require('../services/volunteerService');
 class VolunteerController {
     async getVolunteers(req, res) {
         try {
+            const page = Math.max(parseInt(req.query.page) || 1, 1);
+            const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 100);
+            const skip = req.query.skip !== undefined ? Math.max(parseInt(req.query.skip) || 0, 0) : (page - 1) * limit;
+
+            const options = { limit, skip };
             const volunteers = req.query.available === 'true'
-                ? await volunteerService.getAvailableVolunteers()
-                : await volunteerService.getAllVolunteers();
+                ? await volunteerService.getAvailableVolunteers(options)
+                : await volunteerService.getAllVolunteers(options);
             res.json(volunteers);
         } catch (error) {
             res.status(500).json({ message: error.message });

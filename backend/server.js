@@ -73,8 +73,8 @@ app.set("io", io);
 
 const mongoSanitize = require("./src/middleware/mongoSanitize.middleware");
 
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
 app.use(mongoSanitize);
 
 const { sanitizeInputs } = require("./src/middleware/sanitize.middleware");

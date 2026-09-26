@@ -48,7 +48,7 @@ async function generatePollutionDescriptionFromReportPhoto(photoUrl) {
   }
 
   const mime = mimeFromExt(filePath);
-  const base64 = fs.readFileSync(filePath, "base64");
+  const base64 = await fs.promises.readFile(filePath, "base64");
 
   const openai = getOpenAIClient();
   const model = process.env.OPENAI_VISION_MODEL || "gpt-4o-mini";

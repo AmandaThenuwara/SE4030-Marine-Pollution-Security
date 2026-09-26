@@ -1,12 +1,16 @@
 const Volunteer = require('../models/Volunteer');
 
 class VolunteerService {
-    async getAvailableVolunteers() {
-        return await Volunteer.find({ available: true }).sort({ name: 1 });
+    async getAvailableVolunteers(options = {}) {
+        const limit = Math.min(Math.max(parseInt(options.limit) || 100, 1), 100);
+        const skip = Math.max(parseInt(options.skip) || 0, 0);
+        return await Volunteer.find({ available: true }).sort({ name: 1 }).skip(skip).limit(limit);
     }
 
-    async getAllVolunteers() {
-        return await Volunteer.find().sort({ name: 1 });
+    async getAllVolunteers(options = {}) {
+        const limit = Math.min(Math.max(parseInt(options.limit) || 100, 1), 100);
+        const skip = Math.max(parseInt(options.skip) || 0, 0);
+        return await Volunteer.find().sort({ name: 1 }).skip(skip).limit(limit);
     }
 
     async createVolunteer(data) {

@@ -376,9 +376,15 @@ async function skipAiForMyReport(req, res) {
 
 // GET /api/ch/reports/all/published
 async function listAllPublishedReports(req, res) {
-  // Only return published ones
+  const page = Math.max(parseInt(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 100);
+  const skip = (page - 1) * limit;
+
+  // Only return published ones with bounded pagination
   const reports = await ChReport.find({ isPublished: true })
     .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
     .populate("ownerId", "name email");
 
   const normalized = reports.map(r => {

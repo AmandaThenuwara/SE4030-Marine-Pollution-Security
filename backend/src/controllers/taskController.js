@@ -17,7 +17,12 @@ class TaskController {
                 filters.priority = req.query.priority;
             }
 
-            const tasks = await this.taskService.getAllTasks(filters);
+            const page = Math.max(parseInt(req.query.page) || 1, 1);
+            const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 100);
+            const skip = req.query.skip !== undefined ? Math.max(parseInt(req.query.skip) || 0, 0) : (page - 1) * limit;
+            const options = { limit, skip };
+
+            const tasks = await this.taskService.getAllTasks(filters, options);
             res.json(tasks);
         } catch (error) {
             console.error("GET TASKS ERROR:", error);

@@ -1,10 +1,12 @@
 const Task = require('../models/Task');
 
 class TaskService {
-    async getAllTasks(filters = {}) {
-        // Basic filter logic for Status, Priority, etc.
+    async getAllTasks(filters = {}, options = {}) {
+        // Basic filter logic for Status, Priority, etc. with safe pagination limits
+        const limit = Math.min(Math.max(parseInt(options.limit) || 100, 1), 100);
+        const skip = Math.max(parseInt(options.skip) || 0, 0);
         const query = { isDeleted: false, ...filters };
-        return await Task.find(query).sort({ createdAt: -1 });
+        return await Task.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
     }
 
     async create_task(taskData) {
