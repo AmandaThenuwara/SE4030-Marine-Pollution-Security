@@ -90,8 +90,8 @@ export default function PollutionDashboard({ hideHeader = false }) {
     const navigate = useNavigate();
     const canManage = isCleanupTaskManager() || isAdmin();
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         navigate('/login', { replace: true });
     };
 
@@ -125,7 +125,7 @@ export default function PollutionDashboard({ hideHeader = false }) {
             const url = filterStatus !== "All"
                 ? `${API_BASE_URL}?status=${filterStatus}`
                 : API_BASE_URL;
-            const { data } = await axios.get(url);
+            const { data } = await axios.get(url, { withCredentials: true });
             setTasks(data);
         } catch (e) {
             console.error("DEBUG: Fetch Tasks Failed", e);
@@ -136,9 +136,8 @@ export default function PollutionDashboard({ hideHeader = false }) {
 
     const fetchReports = async () => {
         try {
-            const token = localStorage.getItem("token");
             const { data } = await axios.get(`${SOCKET_URL}/api/ch/reports/all/published`, {
-                headers: { Authorization: `Bearer ${token}` }
+                withCredentials: true
             });
             setReports(data.reports || []);
         } catch (e) {
@@ -152,7 +151,7 @@ export default function PollutionDashboard({ hideHeader = false }) {
 
     const handleComplete = async (id) => {
         try {
-            const { data } = await axios.patch(`${API_BASE_URL}/${id}/complete`);
+            const { data } = await axios.patch(`${API_BASE_URL}/${id}/complete`, undefined, { withCredentials: true });
             setTasks((p) => p.map((x) => x._id === data._id ? data : x));
         } catch (e) { console.error(e); }
     };
@@ -163,7 +162,7 @@ export default function PollutionDashboard({ hideHeader = false }) {
         const id = deleteConfirmId;
         setDeleteConfirmId(null);
         try {
-            await axios.delete(`${API_BASE_URL}/${id}`);
+            await axios.delete(`${API_BASE_URL}/${id}`, { withCredentials: true });
             setTasks((p) => p.filter((x) => x._id !== id));
             if (selectedTask?._id === id) setSelectedTask(null);
         } catch (e) { console.error(e); }

@@ -79,7 +79,11 @@ export default function UpdateTaskModal({ open, onClose, task, onUpdated }) {
         const load = async () => {
             setFetching(true);
             try {
-                const { data } = await axios.get(`${VOL_API}?available=true`);
+                const token = localStorage.getItem("token");
+                const { data } = await axios.get(`${VOL_API}?available=true`, {
+                    withCredentials: true,
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
                 setVolunteers(data);
             } catch {
                 // non-critical, ignore
@@ -103,7 +107,7 @@ export default function UpdateTaskModal({ open, onClose, task, onUpdated }) {
                 notes: form.notes,
                 assignedTo: form.assignedTo || null,
             };
-            const { data } = await axios.patch(`${TASK_API}/${task._id}`, payload);
+            const { data } = await axios.patch(`${TASK_API}/${task._id}`, payload, { withCredentials: true });
             onUpdated(data);
             setSuccess(true);
             setTimeout(() => { setSuccess(false); onClose(); }, 1000);

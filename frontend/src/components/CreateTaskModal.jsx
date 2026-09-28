@@ -182,7 +182,7 @@ export default function CreateTaskModal({ open, onClose, onCreated }) {
                 workforceRequired: form.workforceRequired !== "" ? parseInt(form.workforceRequired) : 0,
                 ...(form.deadline && { deadline: form.deadline }),
             };
-            const { data } = await axios.post(API_BASE_URL, payload);
+            const { data } = await axios.post(API_BASE_URL, payload, { withCredentials: true });
             onCreated(data);
             setForm(INITIAL_FORM);
             setSubmitted(false);

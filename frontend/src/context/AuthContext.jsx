@@ -5,28 +5,28 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(null);
     const [loading, setLoading] = useState(true);
 
     // Load stored session on mount
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+        let active = true;
+        authService.getProfile()
+            .then((response) => {
+                if (active) setUser(response.data);
+            })
+            .catch(() => {
+                if (active) setUser(null);
+            })
+            .finally(() => {
+                if (active) setLoading(false);
+            });
 
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        return () => { active = false; };
     }, []);
 
     const login = async (credentials) => {
         const response = await authService.login(credentials);
-        const { user: userData, token: newToken } = response.data;
-
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-        setToken(newToken);
+        const { user: userData } = response.data;
         setUser(userData);
 
         return response;
@@ -34,11 +34,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         const response = await authService.register(userData);
-        const { user: newUser, token: newToken } = response.data;
-
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(newUser));
-        setToken(newToken);
+        const { user: newUser } = response.data;
         setUser(newUser);
 
         return response;
@@ -46,30 +42,27 @@ export const AuthProvider = ({ children }) => {
 
     const loginWithGoogle = async (idToken) => {
         const response = await authService.googleLogin(idToken);
-        const { user: userData, token: newToken } = response.data;
-
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-        setToken(newToken);
+        const { user: userData } = response.data;
         setUser(userData);
 
         return response;
     };
 
-    const logout = () => {
-        authService.logout();
-        setToken(null);
-        setUser(null);
+    const logout = async () => {
+        try {
+            await authService.logout();
+        } finally {
+            setUser(null);
+        }
     };
 
     const isAdmin = () => user?.role === 'admin';
     const isVolunteer = () => user?.role === 'volunteer';
     const isCleanupTaskManager = () => user?.role === 'Cleanup_Task_Manager';
-    const isLoggedIn = () => !!token;
+    const isLoggedIn = () => !!user;
 
     const value = {
         user,
-        token,
         loading,
         login,
         register,

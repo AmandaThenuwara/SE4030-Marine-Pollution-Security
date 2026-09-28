@@ -55,6 +55,18 @@ app.use(
   })
 );
 
+const stateChangingMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+app.use((req, res, next) => {
+  const origin = req.get("Origin");
+  if (stateChangingMethods.has(req.method) && origin && !allowedOrigins.includes(origin)) {
+    return res.status(403).json({
+      success: false,
+      message: "Origin not allowed",
+    });
+  }
+  return next();
+});
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
 app.use(mongoSanitize);

@@ -23,7 +23,11 @@ const {
  *       200:
  *         description: List of volunteers
  */
-router.get('/', (req, res) => volunteerController.getVolunteers(req, res));
+router.get(
+    '/',
+    authenticate,
+    (req, res) => volunteerController.getVolunteers(req, res)
+);
 
 /**
  * @swagger

@@ -63,6 +63,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
+const stateChangingMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+app.use((req, res, next) => {
+  const origin = req.get('Origin');
+  if (stateChangingMethods.has(req.method) && origin && !allowedOrigins.includes(origin)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Origin not allowed'
+    });
+  }
+  return next();
+});
+
 // Socket.io with strict origin matching
 const io = new Server(server, {
   cors: {

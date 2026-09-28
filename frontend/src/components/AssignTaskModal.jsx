@@ -41,7 +41,11 @@ export default function AssignTaskModal({ open, onClose, task, onAssigned }) {
         const fetchVolunteers = async () => {
             setFetching(true);
             try {
-                const { data } = await axios.get(`${VOL_API}?available=true`);
+                const token = localStorage.getItem("token");
+                const { data } = await axios.get(`${VOL_API}?available=true`, {
+                    withCredentials: true,
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
                 setVolunteers(data);
             } catch {
                 setError("Could not load volunteers.");
@@ -66,7 +70,7 @@ export default function AssignTaskModal({ open, onClose, task, onAssigned }) {
 
             const { data } = await axios.patch(`${TASK_API}/${task._id}/assign`, {
                 volunteerId: assignLabel,
-            });
+            }, { withCredentials: true });
             onAssigned(data);
             onClose();
         } catch (err) {

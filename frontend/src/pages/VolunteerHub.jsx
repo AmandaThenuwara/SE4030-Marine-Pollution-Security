@@ -420,7 +420,7 @@ const VolunteerHub = () => {
                                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-sm font-semibold transition">
                                                     View Details
                                                 </button>
-                                                {(isAdmin() || v.userId === (user?.id || user?._id)) && (
+                                                {(isAdmin() || v.canManage) && (
                                                     <button onClick={() => openRegModal(v)}
                                                         className="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition text-sm">
                                                         <i className="fas fa-edit" />
@@ -808,7 +808,7 @@ const VolunteerHub = () => {
                             </div>
                             
                             {/* Delete Action (Admins or Owner only) */}
-                            {(isAdmin() || (selectedVolunteer.userId === (user?.id || user?._id))) && (
+                            {(isAdmin() || selectedVolunteer.canManage) && (
                                 <div className="mt-12 pt-8 border-t border-[#1f2937]">
                                     <button onClick={() => handleDelete(selectedVolunteer._id || selectedVolunteer.id)}
                                         className="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all border border-rose-500/20 group">
