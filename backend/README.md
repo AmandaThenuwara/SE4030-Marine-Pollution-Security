@@ -85,14 +85,6 @@ Individual API Tests:
 - **Cleanup Tasks**: `npm test __tests__/integration/task.api.test.js`
 - **Volunteer Roster**: `npm test __tests__/integration/volunteer.api.test.js`
 
-### 3. Performance Testing
-We use **Artillery.io** to simulate heavy traffic and ensure API stability under load:
-```bash
-npm install --save-dev artillery
-npm run test:perf
-```
-*Note: Ensure the server is running before executing performance tests.*
-
 ## Complete API Reference
 The platform exposes a comprehensive RESTful API. Below is the full list of available endpoints. For interactive documentation including request/response schemas, visit `http://localhost:5000/api-docs`.
 

@@ -8,7 +8,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:perf": "artillery run __tests__/performance/load-test.yml"
+    "audit": "npm audit --audit-level=high"
   },
   "keywords": [],
   "author": "",
@@ -33,7 +33,6 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "artillery": "^2.0.30",
     "jest": "^30.2.0",
     "mongodb-memory-server": "^11.0.1",
     "nodemon": "^3.1.11",
