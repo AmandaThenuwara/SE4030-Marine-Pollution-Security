@@ -1,11 +1,12 @@
 const Volunteer = require('../models/Volunteer');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
+const { readAuthCookie } = require('../utils/authCookie');
 
 // Authentication middleware
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = readAuthCookie(req);
 
     if (!token) {
       return res.status(401).json({

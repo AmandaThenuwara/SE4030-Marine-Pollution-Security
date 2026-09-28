@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const User = require('../models/user.model');
+const { setAuthCookie, clearAuthCookie } = require('../utils/authCookie');
 
 class AuthController {
     // Register a new user (volunteer or admin)
@@ -85,12 +86,13 @@ class AuthController {
                 { expiresIn: '7d' }
             );
 
+            setAuthCookie(res, token);
+
             res.status(201).json({
                 success: true,
                 message: 'Registration successful',
                 data: {
-                    user: { id: user._id, name: user.name, email: user.email, role: user.role },
-                    token
+                    user: { id: user._id, name: user.name, email: user.email, role: user.role }
                 }
             });
         } catch (error) {
@@ -166,12 +168,13 @@ class AuthController {
                 { expiresIn: '7d' }
             );
 
+            setAuthCookie(res, token);
+
             res.status(200).json({
                 success: true,
                 message: 'Login successful',
                 data: {
-                    user: { id: user._id, name: user.name, email: user.email, role: user.role },
-                    token
+                    user: { id: user._id, name: user.name, email: user.email, role: user.role }
                 }
             });
         } catch (error) {
@@ -186,7 +189,8 @@ class AuthController {
     // Get current user profile
     async getProfile(req, res) {
         try {
-            const user = await User.findById(req.user.id);
+            const user = await User.findById(req.user.id)
+                .select('name email role avatar');
 
             if (!user) {
                 return res.status(404).json({
@@ -197,7 +201,13 @@ class AuthController {
 
             res.status(200).json({
                 success: true,
-                data: user
+                data: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    ...(user.avatar ? { avatar: user.avatar } : {})
+                }
             });
         } catch (error) {
             console.error('Error in getProfile:', error);
@@ -362,6 +372,8 @@ class AuthController {
                 { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
             );
 
+            setAuthCookie(res, token);
+
             return res.status(200).json({
                 success: true,
                 message: 'Google authentication successful',
@@ -372,8 +384,7 @@ class AuthController {
                         email: user.email,
                         role: user.role,
                         avatar: user.avatar || ''
-                    },
-                    token
+                    }
                 }
             });
 
@@ -384,6 +395,14 @@ class AuthController {
                 message: error.message || 'Internal server error during Google authentication'
             });
         }
+    }
+
+    async logout(req, res) {
+        clearAuthCookie(res);
+        return res.status(200).json({
+            success: true,
+            message: 'Logout successful'
+        });
     }
 }
 

@@ -28,7 +28,9 @@ describe('Google Authentication Unit Tests', () => {
         };
         mockRes = {
             json: jest.fn().mockReturnThis(),
-            status: jest.fn().mockReturnThis()
+            status: jest.fn().mockReturnThis(),
+            cookie: jest.fn().mockReturnThis(),
+            clearCookie: jest.fn().mockReturnThis()
         };
     });
 
@@ -131,16 +133,26 @@ describe('Google Authentication Unit Tests', () => {
             await authController.googleLogin(mockReq, mockRes);
 
             expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.cookie).toHaveBeenCalledWith(
+                'auth_token',
+                'mock_signed_jwt',
+                expect.objectContaining({
+                    httpOnly: true,
+                    path: '/',
+                    sameSite: 'lax',
+                    secure: false
+                })
+            );
             expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
                 success: true,
                 data: expect.objectContaining({
                     user: expect.objectContaining({
                         role: 'volunteer',
                         email: 'volunteer@gmail.com'
-                    }),
-                    token: 'mock_signed_jwt'
+                    })
                 })
             }));
+            expect(mockRes.json.mock.calls[0][0].data).not.toHaveProperty('token');
         });
 
         it('should reject deactivated user accounts with 403', async () => {

@@ -31,7 +31,11 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
   const onHome = location.pathname === '/';
 
-  const handleLogout = () => { logout(); navigate('/login'); setIsMenuOpen(false); };
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+    setIsMenuOpen(false);
+  };
 
   // Nav is always on a dark surface (aurora or dark glass), so always use white text
   const darkMode = true;

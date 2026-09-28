@@ -36,33 +36,8 @@ export const authService = {
         return await api.get('/extras/fact');
     },
 
-    // Logout (client-side)
-    logout: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-    },
-
-    // Get stored token
-    getToken: () => {
-        return localStorage.getItem('token');
-    },
-
-    // Get stored user
-    getUser: () => {
-        const user = localStorage.getItem('user');
-        return user ? JSON.parse(user) : null;
-    },
-
-    // Check if logged in
-    isLoggedIn: () => {
-        return !!localStorage.getItem('token');
-    },
-
-    // Check if admin
-    isAdmin: () => {
-        const user = localStorage.getItem('user');
-        if (!user) return false;
-        return JSON.parse(user).role === 'admin';
+    logout: async () => {
+        return await api.post('/auth/logout');
     }
 };
 

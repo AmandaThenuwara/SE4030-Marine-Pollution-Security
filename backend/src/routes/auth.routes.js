@@ -139,12 +139,24 @@ router.post(
 
 /**
  * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Clear the current authentication cookie
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
+router.post('/logout', authController.logout);
+
+/**
+ * @swagger
  * /api/auth/profile:
  *   get:
  *     summary: Get current user profile
  *     tags: [Auth]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: User profile data
@@ -160,7 +172,7 @@ router.get('/profile', authenticate, authController.getProfile);
  *     summary: Get all volunteers (Admin only)
  *     tags: [Auth]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: List of volunteers
