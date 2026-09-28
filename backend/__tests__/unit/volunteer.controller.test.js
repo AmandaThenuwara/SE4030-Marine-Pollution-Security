@@ -12,7 +12,8 @@ describe('VolunteerController Unit Tests', () => {
         mockReq = {
             query: {},
             params: {},
-            body: {}
+            body: {},
+            user: { id: 'user123', role: 'volunteer' }
         };
         mockRes = {
             json: jest.fn().mockReturnThis(),
@@ -27,7 +28,10 @@ describe('VolunteerController Unit Tests', () => {
 
             await volunteerController.getVolunteers(mockReq, mockRes);
 
-            expect(volunteerService.getAllVolunteers).toHaveBeenCalled();
+            expect(volunteerService.getAllVolunteers).toHaveBeenCalledWith({
+                viewerId: 'user123',
+                viewerRole: 'volunteer'
+            });
             expect(mockRes.json).toHaveBeenCalledWith(volunteers);
         });
 
@@ -38,20 +42,25 @@ describe('VolunteerController Unit Tests', () => {
 
             await volunteerController.getVolunteers(mockReq, mockRes);
 
-            expect(volunteerService.getAvailableVolunteers).toHaveBeenCalled();
+            expect(volunteerService.getAvailableVolunteers).toHaveBeenCalledWith({
+                viewerId: 'user123',
+                viewerRole: 'volunteer'
+            });
             expect(mockRes.json).toHaveBeenCalledWith(volunteers);
         });
     });
 
     describe('createVolunteer', () => {
         it('should create a volunteer and return 201', async () => {
-            const newVol = { name: 'New Vol' };
-            mockReq.body = newVol;
-            volunteerService.createVolunteer.mockResolvedValue({ id: '3', ...newVol });
+            mockReq.body = { name: 'New Vol', contact: '0771234567' };
+            volunteerService.createVolunteer.mockResolvedValue({ id: '3', ...mockReq.body });
 
             await volunteerController.createVolunteer(mockReq, mockRes);
 
-            expect(volunteerService.createVolunteer).toHaveBeenCalledWith(newVol);
+            expect(volunteerService.createVolunteer).toHaveBeenCalledWith(expect.objectContaining({
+                name: 'New Vol',
+                contact: '0771234567'
+            }));
             expect(mockRes.status).toHaveBeenCalledWith(201);
         });
     });

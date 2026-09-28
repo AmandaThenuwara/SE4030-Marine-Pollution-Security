@@ -79,7 +79,11 @@ export default function UpdateTaskModal({ open, onClose, task, onUpdated }) {
         const load = async () => {
             setFetching(true);
             try {
-                const { data } = await axios.get(`${VOL_API}?available=true`, { withCredentials: true });
+                const token = localStorage.getItem("token");
+                const { data } = await axios.get(`${VOL_API}?available=true`, {
+                    withCredentials: true,
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
                 setVolunteers(data);
             } catch {
                 // non-critical, ignore

@@ -3,9 +3,13 @@ const volunteerService = require('../services/volunteerService');
 class VolunteerController {
     async getVolunteers(req, res) {
         try {
+            const accessContext = {
+                viewerRole: req.user.role,
+                viewerId: req.user.id
+            };
             const volunteers = req.query.available === 'true'
-                ? await volunteerService.getAvailableVolunteers()
-                : await volunteerService.getAllVolunteers();
+                ? await volunteerService.getAvailableVolunteers(accessContext)
+                : await volunteerService.getAllVolunteers(accessContext);
             res.json(volunteers);
         } catch (error) {
             res.status(500).json({ message: error.message });
